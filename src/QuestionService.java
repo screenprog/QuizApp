@@ -34,17 +34,7 @@ public class QuestionService {
         getLastId();
     }
 
-    public String url() {
-        return url;
-    }
 
-    public String user() {
-        return user;
-    }
-
-    public String pass() {
-        return pass;
-    }
 
     private void getLastId()
     {

@@ -8,6 +8,11 @@ public class QuizService {
     private final Scanner sc ;
     Player ply;
 
+    private final String url = System.getenv("DataBaseURL");
+
+    private final String user = System.getenv("DataBaseUserName");
+    private final String pass = System.getenv("DataBaseUserPass");
+
     Connection con;
     PreparedStatement pst = null;
 
@@ -97,7 +102,7 @@ public class QuizService {
 
         try
         {
-            con = DriverManager.getConnection(qs.url(),qs.user(),qs.pass());
+            con = DriverManager.getConnection(url,user,pass);
             String saveQue = "insert into players values(?,?,?,?,?,?,?,?)";
             pst = con.prepareStatement(saveQue);
             pst.setString(1,"random_questions");
@@ -133,7 +138,7 @@ public class QuizService {
     {
         try
         {
-             con = DriverManager.getConnection(qs.url(),qs.user(),qs.pass());
+             con = DriverManager.getConnection(url,user,pass);
             String lastIdQue = "SELECT * FROM players ORDER BY player_id DESC LIMIT 1";
             pst = con.prepareStatement(lastIdQue);
              try
