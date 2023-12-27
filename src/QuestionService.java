@@ -8,20 +8,25 @@ public class QuestionService {
 
     private Connection con = null;
     private PreparedStatement pst = null;
-    private final String url = "jdbc:postgresql://localhost:5432/QuizeDataBase";
-    private final String user = "postgres";
-    private final String pass = "NoP4$$";
+//    private final String url = "jdbc:postgresql://localhost:5432/QuizeDataBase";
+    private final String url = System.getenv("DataBaseURL");
+//    private final String user = "postgres";
+    private final String user = System.getenv("DataBaseUserName");
+//    private final String pass = "NoP4$$";
+    private final String pass = System.getenv("DataBaseUserPass");
     private int id = 1;
 
 
 
-    private static final String saveQue = "insert into questions_answers values(?,?,?,?,?,?,?)";
-    private static final String deleteQue = "delete from questions_answers where qid = ?";
-    private static final String readQue = "select * from questions_answers";
+//    private static final String saveQue = "insert into questions_answers values(?,?,?,?,?,?,?)";
+    private static final String saveQue = "insert into random_questions values(?,?,?,?,?,?,?)";
+//    private static final String deleteQue = "delete from questions_answers where qid = ?";
+    private static final String deleteQue = "delete from random_questions where qid = ?";
+//    private static final String readQue = "select * from questions_answers";
+    private static final String readQue = "select * from random_questions";
     private static final String perfQue = "select * from players";
-    private static final String lastIdQue = "SELECT * FROM questions_answers " +
-            "ORDER BY qid DESC " +
-            "LIMIT 1";
+//    private static final String lastIdQue = "SELECT * FROM questions_answers ORDER BY qid DESC LIMIT 1";
+    private static final String lastIdQue = "SELECT * FROM random_questions ORDER BY qid DESC LIMIT 1";
 
     public QuestionService() {
         sc = new Scanner(System.in);
@@ -57,6 +62,7 @@ public class QuestionService {
             catch(SQLException e)
             {
                 System.err.println("SQL Exception : "+ e);
+                id = 0;
             }
 
 
@@ -286,10 +292,11 @@ public class QuestionService {
                 System.out.println("\nQuiz name : "+ rs.getString(1));
                 System.out.println("player ID : "+ rs.getInt(2));
                 System.out.println("Player name : "+ rs.getString(3));
-                System.out.println("Questions attempted : "+rs.getInt(4) );
-                System.out.println("Questions skipped : "+rs.getInt(5));
-                System.out.println("Wrong answers : "+ rs.getInt(6) );
-                System.out.println("Total Score : "+rs.getInt(7));
+                System.out.println("Player age : "+ rs.getInt(4));
+                System.out.println("Questions attempted : "+rs.getInt(5) );
+                System.out.println("Questions skipped : "+rs.getInt(6));
+                System.out.println("Wrong answers : "+ rs.getInt(7) );
+                System.out.println("Total Score : "+rs.getInt(8));
             }
         }
         catch (SQLException e)

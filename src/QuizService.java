@@ -98,16 +98,16 @@ public class QuizService {
         try
         {
             con = DriverManager.getConnection(qs.url(),qs.user(),qs.pass());
-            String saveQue = "insert into players values(?,?,?,?,?,?,?)";
+            String saveQue = "insert into players values(?,?,?,?,?,?,?,?)";
             pst = con.prepareStatement(saveQue);
-            pst.setString(1,"questions_answers");
+            pst.setString(1,"random_questions");
             pst.setInt(2,ply.playerId());
             pst.setString(3,ply.name());
-            pst.setInt(4,ply.queAttempt());
-            pst.setInt(5,ply.queSkip());
-            pst.setInt(6,ply.wrongAns());
-            pst.setInt(7, ply.totalScore());
-            pst.setInt(8, ply.age());
+            pst.setInt(4,ply.age());
+            pst.setInt(5,ply.queAttempt());
+            pst.setInt(6,ply.queSkip());
+            pst.setInt(7,ply.wrongAns());
+            pst.setInt(8, ply.totalScore());
 
             pst.execute();
         } catch (SQLException e) {

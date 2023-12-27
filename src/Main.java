@@ -8,7 +8,7 @@ public class Main {
 
         while(flag)
         {
-            System.out.println("\n- Select an option -");
+            System.out.println("\n  - Select an option -");
             System.out.println("    Trainer | 1");
             System.out.println("     Player | 2");
             System.out.println("       Exit | 0");
