@@ -108,7 +108,7 @@ public class QuizService {
             con = DriverManager.getConnection(url,user,pass);
             String saveQue = "insert into players values(?,?,?,?,?,?,?,?)";
             pst = con.prepareStatement(saveQue);
-            pst.setString(1,"random_questions");
+            pst.setString(1,quizName);
             pst.setInt(2,ply.playerId());
             pst.setString(3,ply.name());
             pst.setInt(4,ply.age());
