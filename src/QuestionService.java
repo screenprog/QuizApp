@@ -8,64 +8,28 @@ public class QuestionService {
 
     private Connection con = null;
     private PreparedStatement pst = null;
-//    private final String url = "jdbc:postgresql://localhost:5432/QuizeDataBase";
     private final String url = System.getenv("DataBaseURL");
-//    private final String user = "postgres";
     private final String user = System.getenv("DataBaseUserName");
-//    private final String pass = "NoP4$$";
     private final String pass = System.getenv("DataBaseUserPass");
     private int id = 1;
+    public static StringBuilder tableName ;
 
-
-
-//    private static final String saveQue = "insert into questions_answers values(?,?,?,?,?,?,?)";
-    private static final String saveQue = "insert into random_questions values(?,?,?,?,?,?,?)";
-//    private static final String deleteQue = "delete from questions_answers where qid = ?";
-    private static final String deleteQue = "delete from random_questions where qid = ?";
-//    private static final String readQue = "select * from questions_answers";
-    private static final String readQue = "select * from random_questions";
-    private static final String perfQue = "select * from players";
-//    private static final String lastIdQue = "SELECT * FROM questions_answers ORDER BY qid DESC LIMIT 1";
-    private static final String lastIdQue = "SELECT * FROM random_questions ORDER BY qid DESC LIMIT 1";
 
     public QuestionService() {
         sc = new Scanner(System.in);
         ques = new ArrayList<>();
-        getLastId();
     }
 
 
-
-    private void getLastId()
-    {
-
-            try(Connection con1 = DriverManager.getConnection(url,user,pass);
-                PreparedStatement pst1 = con1.prepareStatement(lastIdQue))
-            {
-
-                ResultSet resultSet = pst1.executeQuery();
-                resultSet.next();
-                int temp = resultSet.getInt(1);
-                if(temp > 0)
-                    id = temp;
-            }
-            catch(SQLException e)
-            {
-                System.err.println("SQL Exception : "+ e);
-                id = 0;
-            }
-
-
-    }
-    
     void setQuestions()
     {
-        System.out.print("How many questions you want to set in the quiz : ");
-        int size = sc.nextInt();
+
+        System.out.print(" - You can only set 15 questions in the quiz - ");
+        int size = 15;
         for(int i = 0; i < size; i++)
         {
             Questions que = new Questions();
-            que.setId(++id);
+            que.setId(id++);
             sc.nextLine();
             System.out.print("Enter question : ");
             que.setQue(sc.nextLine());
@@ -84,8 +48,40 @@ public class QuestionService {
 
     }
 
+    void createTable()
+    {
+        String createTableQue = "CREATE TABLE IF NOT EXISTS " +
+                tableName +
+                " (qid SERIAL PRIMARY KEY, questions TEXT, opt1 TEXT, opt2 TEXT, opt3 TEXT, opt4 TEXT, ans TEXT)";
+
+        try
+        {
+            con = DriverManager.getConnection(url,user,pass);
+            pst = con.prepareStatement(createTableQue);
+            pst.execute();
+        }
+        catch (SQLException e)
+        {
+            System.err.println("Connection error : "+ e);
+        }
+        finally {
+            try
+            {
+                if(pst != null)
+                    pst.close();
+                if (con != null)
+                    con.close();
+            }
+            catch (Exception e)
+            {
+                System.err.println("Resources closing : "+ e);
+            }
+        }
+    }
+
     void saveToDataBase()
     {
+        final String saveQue = "insert into "+ tableName +" values(?,?,?,?,?,?,?)";
 
         try
         {
@@ -127,6 +123,7 @@ public class QuestionService {
 
     void deleteFromDataBase()
     {
+        final String deleteQue = "delete from"+ tableName +" where qid = ?";
         System.out.print("Enter qid to delete : ");
         int qid = sc.nextInt();
         try
@@ -158,6 +155,7 @@ public class QuestionService {
 
     void readFromDataBase()
     {
+        final String readQue = "select * from "+ tableName ;
         try
         {
             con = DriverManager.getConnection(url, user, pass);
@@ -186,8 +184,6 @@ public class QuestionService {
         {
             try
             {
-                if(pst != null)
-                    pst.close();
                 if(con != null)
                     con.close();
             }
@@ -229,12 +225,12 @@ public class QuestionService {
 
     }
 
-    void loadQuestions()
+    void loadQuestions(String readQuiz)
     {
         try
         {
             con = DriverManager.getConnection(url,user,pass);
-            pst = con.prepareStatement(readQue);
+            pst = con.prepareStatement(readQuiz);
             ResultSet rs = pst.executeQuery();
             while (rs.next())
             {
@@ -249,7 +245,6 @@ public class QuestionService {
                 ques.add(q);
             }
 
-            pst.close();
         }
         catch(SQLException e)
         {
@@ -272,7 +267,7 @@ public class QuestionService {
 
     void getPerformance()
     {
-//        QuizService quizService = new QuizService();
+        final String perfQue = "select * from players";
         try(Connection cn = DriverManager.getConnection(url,user,pass) )
         {
             pst = cn.prepareStatement(perfQue);

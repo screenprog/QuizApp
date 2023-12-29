@@ -7,9 +7,15 @@ public class Admin {
     {
         sc = new Scanner(System.in);
         qs = new QuestionService();
+//        sc.nextLine();
+        System.out.print("\n Enter new quiz name : ");
+        QuestionService.tableName = new StringBuilder(sc.nextLine());
+
+        qs.createTable();
     }
     void adminFunction()
     {
+
         boolean flag = true;
         while (flag)
         {

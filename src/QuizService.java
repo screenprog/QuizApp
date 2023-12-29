@@ -13,6 +13,9 @@ public class QuizService {
     private final String user = System.getenv("DataBaseUserName");
     private final String pass = System.getenv("DataBaseUserPass");
 
+    private String quizName;
+
+
     Connection con;
     PreparedStatement pst = null;
 
@@ -42,14 +45,14 @@ public class QuizService {
 
     void startQuiz()
     {
+        final String readQue = "select * from "+ quizName ;
         int attempt = 0;
         int skip = 0;
         int score = 0;
         int wrong = 0;
-        qs.loadQuestions();
+        qs.loadQuestions(readQue);
         questions = qs.ques();
 
-        sc.nextLine();
         System.out.println("""
 
                            - Write answers only rather than options. -\s
@@ -131,6 +134,36 @@ public class QuizService {
             }
 
         }
+
+    }
+
+    void selectQuiz()
+    {
+        ArrayList<String> quizNames = new ArrayList<>();
+
+        try(Connection con = DriverManager.getConnection(url,user,pass))
+        {
+            DatabaseMetaData dbmt = con.getMetaData();
+            ResultSet rs = dbmt.getTables(null,null,null,new String[]{"TABLE"});
+            while(rs.next())
+            {
+                String temp = rs.getString("TABLE_NAME");
+                if(!temp.equals("players"))
+                    quizNames.add(temp);
+            }
+        }
+        catch (SQLException e)
+        {
+            System.err.println("Connection Error : "+ e);
+        }
+
+        quizNames.forEach(System.out::println);
+
+        do
+        {
+            System.out.print("\nEnter a quiz name (correct name) : ");
+            quizName = sc.nextLine();
+        }while(!quizNames.contains(quizName));
 
     }
 

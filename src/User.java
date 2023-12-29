@@ -15,8 +15,9 @@ public class User
         while(flag)
         {
             System.out.println("\n - Select an option -");
-            System.out.println("  Start Quiz | 1 ");
-            System.out.println(" Check Score | 2 ");
+            System.out.println(" Select Quiz | 1");
+            System.out.println("  Start Quiz | 2 ");
+            System.out.println(" Check Score | 3 ");
             System.out.println("        Exit | 0 ");
             System.out.print("You option : ");
             switch (sc.nextInt())
@@ -26,9 +27,12 @@ public class User
                     flag = false;
                     break;
                 case 1:
-                    qs.startQuiz();
+                    qs.selectQuiz();
                     break;
                 case 2:
+                    qs.startQuiz();
+                    break;
+                case 3:
                     qs.getScore();
                     break;
                 default:
@@ -37,4 +41,5 @@ public class User
 
         }
     }
+
 }
