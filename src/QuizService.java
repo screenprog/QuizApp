@@ -4,29 +4,23 @@ import java.util.Scanner;
 
 public class QuizService {
     ArrayList<Questions> questions ;
-    private final QuestionService qs;
     private final Scanner sc ;
     Player ply;
-
     private final String url = System.getenv("DataBaseURL");
-
     private final String user = System.getenv("DataBaseUserName");
     private final String pass = System.getenv("DataBaseUserPass");
-
     private String quizName;
-
-
     Connection con;
     PreparedStatement pst = null;
-
-
     private int lastId;
-
+    QuizService(String str)
+    {
+        sc = new Scanner(System.in);
+    }
     public QuizService()
     {
         this.questions = new ArrayList<>();
         this.sc = new Scanner(System.in);
-        qs = new QuestionService();
         ply = new Player();
         getLastId();
         setInfo();
@@ -45,14 +39,11 @@ public class QuizService {
 
     void startQuiz()
     {
+        Player.Score s = new Player.Score();
+        this.selectQuiz();
+        s.setQuizType(quizName);
         final String readQue = "select * from "+ quizName ;
-        int attempt = 0;
-        int skip = 0;
-        int score = 0;
-        int wrong = 0;
-        qs.loadQuestions(readQue);
-        questions = qs.ques();
-
+        this.loadQuestions(readQue);
         System.out.println("""
 
                            - Write answers only rather than options. -\s
@@ -68,41 +59,36 @@ public class QuizService {
             System.out.print("your answer (only answer) : ");
             String str = sc.nextLine();
             if (str.equals("skip"))
-                skip++;
+                s.skip++;
             else
-                attempt++;
+                s.attempt++;
 
             if (q.ans().equals(str)) {
-                score++;
+                s.score++;
             } else {
-                wrong++;
+                s.wrong++;
             }
             q.setAns(str);
 
         }
-
-
-        ply.setQueAttempt(attempt);
-        ply.setQueSkip(skip);
-        ply.setWrongAns(wrong);
-        ply.setTotalScore(score);
+        ply.scores.add(s);
+        this.saveAnswers();
     }
 
     void getScore()
     {
-        System.out.print("\nNumber of questions attempted : "+ ply.queAttempt());
-
-        System.out.print("\nNumber of questions skipped : "+ ply.queSkip());
-
-        System.out.print("\nNumber of wrong questions : "+ ply.wrongAns());
-
-        System.out.print("\nTotal score : "+ ply.totalScore());
-
+        for(Player.Score s : ply.scores)
+        {
+            System.out.println("\nQuiz type : "+ s.quizType());
+            System.out.println("Number of questions attempt : "+ s.attempt());
+            System.out.println("Number of questions skipped : "+ s.skip());
+            System.out.println("Number of wrong questions : "+ s.wrong());
+            System.out.println("Total score : "+ s.score());
+        }
     }
 
     void saveAnswers()
     {
-
         try
         {
             con = DriverManager.getConnection(url,user,pass);
@@ -112,10 +98,10 @@ public class QuizService {
             pst.setInt(2,ply.playerId());
             pst.setString(3,ply.name());
             pst.setInt(4,ply.age());
-            pst.setInt(5,ply.queAttempt());
-            pst.setInt(6,ply.queSkip());
-            pst.setInt(7,ply.wrongAns());
-            pst.setInt(8, ply.totalScore());
+            pst.setInt(5,ply.scores.getLast().attempt());
+            pst.setInt(6,ply.scores.getLast().skip());
+            pst.setInt(7,ply.scores.getLast().wrong());
+            pst.setInt(8, ply.scores.getLast().score());
 
             pst.execute();
         } catch (SQLException e) {
@@ -140,7 +126,18 @@ public class QuizService {
     void selectQuiz()
     {
         ArrayList<String> quizNames = new ArrayList<>();
-
+        this.getQuiz(quizNames);
+        System.out.println();
+        quizNames.forEach(System.out::println);
+        sc.nextLine();
+        do
+        {
+            System.out.print("Select a quiz name (correct name) : ");
+            quizName = sc.nextLine();
+        }while(!quizNames.contains(quizName));
+    }
+    void getQuiz(ArrayList<String> quizNames)
+    {
         try(Connection con = DriverManager.getConnection(url,user,pass))
         {
             DatabaseMetaData dbmt = con.getMetaData();
@@ -156,15 +153,6 @@ public class QuizService {
         {
             System.err.println("Connection Error : "+ e);
         }
-
-        quizNames.forEach(System.out::println);
-
-        do
-        {
-            System.out.print("\nEnter a quiz name (correct name) : ");
-            quizName = sc.nextLine();
-        }while(!quizNames.contains(quizName));
-
     }
 
     void getLastId()
@@ -206,9 +194,44 @@ public class QuizService {
                 System.out.println("\nResources closing exception : "+ e);
             }
         }
-
-
     }
 
+    void loadQuestions(String readQuiz)
+    {
+        try
+        {
+            con = DriverManager.getConnection(url,user,pass);
+            pst = con.prepareStatement(readQuiz);
+            ResultSet rs = pst.executeQuery();
+            while (rs.next())
+            {
+                Questions q = new Questions();
+                q.setId(rs.getInt(1));
+                q.setQue(rs.getString(2));
+                q.setOpt1(rs.getString(3));
+                q.setOpt2(rs.getString(4));
+                q.setOpt3(rs.getString(5));
+                q.setOpt4(rs.getString(6));
+                q.setAns(rs.getString(7));
+                questions.add(q);
+            }
 
+        }
+        catch(SQLException e)
+        {
+            System.out.println("SQL Exception : "+e);
+        }
+        finally
+        {
+            try
+            {
+                if (pst != null)
+                    pst.close();
+                if (con != null)
+                    con.close();
+            } catch (SQLException e) {
+                System.out.println("SQL Exception : "+ e);
+            }
+        }
+    }
 }

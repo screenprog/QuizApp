@@ -4,26 +4,34 @@ public class QuestionService {
 
     private final Scanner sc;
     private final ArrayList<Questions> ques;
-
-
     private Connection con = null;
     private PreparedStatement pst = null;
     private final String url = System.getenv("DataBaseURL");
     private final String user = System.getenv("DataBaseUserName");
     private final String pass = System.getenv("DataBaseUserPass");
     private int id = 1;
-    public static StringBuilder tableName ;
-
-
+    public String tableName ;
+    private final QuizService quizService = new QuizService("getQuiz()");
+    ArrayList<String> quizList;
     public QuestionService() {
         sc = new Scanner(System.in);
         ques = new ArrayList<>();
+        quizList = new ArrayList<>();
     }
 
 
     void setQuestions()
     {
+        System.out.println("\nExisting quiz list : ");
+        quizService.getQuiz(quizList);
+        quizList.forEach(System.out::println);
+        do
+        {
+            System.out.println("Enter unique quiz name : ");
+            tableName = sc.nextLine();
+        }while(quizList.contains(tableName));
 
+        this.createTable();
         System.out.print(" - You can only set 15 questions in the quiz - ");
         int size = 15;
         for(int i = 0; i < size; i++)
@@ -46,6 +54,21 @@ public class QuestionService {
             ques.add(que);
         }
 
+        String str;
+        do
+        {
+            this.getQuestionsAnswers();
+            System.out.print("To update any question enter question id else 0 : ");
+            int check = sc.nextInt();
+            if(check != 0)
+                this.updateQuestions(check-1);
+            sc.nextLine();
+            System.out.println("If you are sure that all the questions are correct than write \"correct\"  : ");
+            str = sc.nextLine();
+        }while(!str.equals("correct"));
+
+        this.saveToDataBase();
+
     }
 
     void createTable()
@@ -53,7 +76,6 @@ public class QuestionService {
         String createTableQue = "CREATE TABLE IF NOT EXISTS " +
                 tableName +
                 " (qid SERIAL PRIMARY KEY, questions TEXT, opt1 TEXT, opt2 TEXT, opt3 TEXT, opt4 TEXT, ans TEXT)";
-
         try
         {
             con = DriverManager.getConnection(url,user,pass);
@@ -97,7 +119,6 @@ public class QuestionService {
                 pst.setString(5, que.opt3());
                 pst.setString(6, que.opt4());
                 pst.setString(7, que.ans());
-
                 pst.executeUpdate();
             }
             System.out.println("Saved to data base");
@@ -121,7 +142,7 @@ public class QuestionService {
 
     }
 
-    void deleteFromDataBase()
+    void deleteQuestionFromDataBase()
     {
         final String deleteQue = "delete from"+ tableName +" where qid = ?";
         System.out.print("Enter qid to delete : ");
@@ -153,15 +174,22 @@ public class QuestionService {
         }
     }
 
-    void readFromDataBase()
+    void checkQuiz()
     {
+        System.out.println("\nWhich quiz you want to check : ");
+        quizService.getQuiz(quizList);
+        quizList.forEach(System.out::println);
+        do
+        {
+            System.out.print("\nSelect a quiz : ");
+            tableName = sc.nextLine();
+        }while(!quizList.contains(tableName));
         final String readQue = "select * from "+ tableName ;
         try
         {
             con = DriverManager.getConnection(url, user, pass);
             Statement st = con.createStatement();
             ResultSet rs = st.executeQuery(readQue);
-
             while(rs.next())
             {
                 System.out.print(rs.getInt(1)+". ");
@@ -173,10 +201,7 @@ public class QuestionService {
                 System.out.println("Answer  : "+ rs.getString(7));
 
             }
-
             st.close();
-
-
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
@@ -196,7 +221,7 @@ public class QuestionService {
     }
     void getQuestionsAnswers()
     {
-        System.out.println("Data in memory : \n ");
+        System.out.println("Questions : \n ");
         for (int i = 0; i< ques.size(); i++)
         {
             System.out.println("i : "+i +"-->"+ ques.get(i));
@@ -225,46 +250,6 @@ public class QuestionService {
 
     }
 
-    void loadQuestions(String readQuiz)
-    {
-        try
-        {
-            con = DriverManager.getConnection(url,user,pass);
-            pst = con.prepareStatement(readQuiz);
-            ResultSet rs = pst.executeQuery();
-            while (rs.next())
-            {
-                Questions q = new Questions();
-                q.setId(rs.getInt(1));
-                q.setQue(rs.getString(2));
-                q.setOpt1(rs.getString(3));
-                q.setOpt2(rs.getString(4));
-                q.setOpt3(rs.getString(5));
-                q.setOpt4(rs.getString(6));
-                q.setAns(rs.getString(7));
-                ques.add(q);
-            }
-
-        }
-        catch(SQLException e)
-        {
-            System.out.println("SQL Exception : "+e);
-        }
-        finally
-        {
-            try
-            {
-                if (pst != null)
-                    pst.close();
-                if (con != null)
-                    con.close();
-            } catch (SQLException e) {
-                System.out.println("SQL Exception : "+ e);
-            }
-
-        }
-    }
-
     void getPerformance()
     {
         final String perfQue = "select * from players";
@@ -288,9 +273,5 @@ public class QuestionService {
         {
             System.out.println("SQL Exception : "+ e);
         }
-    }
-
-    public ArrayList<Questions> ques() {
-        return ques;
     }
 }

@@ -1,20 +1,43 @@
+import java.util.ArrayList;
+
 public class Player {
 
     private String name;
     private int age;
 
     private int playerId;
-    private int totalScore;
-    private int queAttempt;
 
-    private int queSkip;
-    private int wrongAns;
-
-    public Player()
+    static class Score
     {
+        String quizType = null;
+        int attempt = 0;
+        int skip = 0;
+        int score = 0;
+        int wrong = 0;
+        public String quizType() {
+            return quizType;
+        }
+        public void setQuizType(String quizType) {
+            this.quizType = quizType;
+        }
 
+        public int attempt() {
+            return attempt;
+        }
+
+        public int skip() {
+            return skip;
+        }
+
+        public int score() {
+            return score;
+        }
+
+        public int wrong() {
+            return wrong;
+        }
     }
-
+    ArrayList<Score> scores = new ArrayList<>();
     public String name() {
         return name;
     }
@@ -39,46 +62,4 @@ public class Player {
         this.playerId = playerId;
     }
 
-    public int totalScore() {
-        return totalScore;
-    }
-
-    public void setTotalScore(int totalScore) {
-        this.totalScore = totalScore;
-    }
-
-    public int queAttempt() {
-        return queAttempt;
-    }
-
-    public void setQueAttempt(int queAttempt) {
-        this.queAttempt = queAttempt;
-    }
-
-    public int wrongAns() {
-        return wrongAns;
-    }
-
-    public void setWrongAns(int wrongAns) {
-        this.wrongAns = wrongAns;
-    }
-
-    public int queSkip() {
-        return queSkip;
-    }
-
-    public void setQueSkip(int queSkip) {
-        this.queSkip = queSkip;
-    }
-
-    @Override
-    public String toString() {
-        return "Participant{" +
-                "name='" + name + '\'' +
-                ", playerId='" + playerId + '\'' +
-                ", totalScore=" + totalScore +
-                ", queAttempt=" + queAttempt +
-                ", wrongAns=" + wrongAns +
-                '}';
-    }
 }

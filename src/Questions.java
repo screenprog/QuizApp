@@ -69,13 +69,13 @@ public class Questions {
     @Override
     public String toString() {
         return "Questions{" +
-                "id=" + id +
-                ", que='" + que + '\'' +
-                ", opt1='" + opt1 + '\'' +
-                ", opt2='" + opt2 + '\'' +
-                ", opt3='" + opt3 + '\'' +
-                ", opt4='" + opt4 + '\'' +
-                ", ans='" + ans + '\'' +
+                "\nid=" + id +
+                ", \nque='" + que + '\'' +
+                ", \nopt1='" + opt1 + '\'' +
+                ", \topt2='" + opt2 + '\'' +
+                ", \nopt3='" + opt3 + '\'' +
+                ", \topt4='" + opt4 + '\'' +
+                ", \nans='" + ans + '\'' +
                 '}';
     }
 
